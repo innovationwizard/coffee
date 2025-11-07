@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guatemalan Coffee Recommendation Machine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f3ed 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6B4423 0%, #8B5A3C 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .form-section {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:hover {
+            border-color: #8B5A3C;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #6B4423;
+            box-shadow: 0 0 0 3px rgba(107, 68, 35, 0.1);
+        }
+
+        .btn-recommend {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #6B4423 0%, #8B5A3C 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn-recommend:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(107, 68, 35, 0.3);
+        }
+
+        .btn-recommend:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            border-left: 5px solid #6B4423;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h2 {
+            color: #6B4423;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .result-label {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .result-value {
+            color: #555;
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #c00;
+        }
+
+        .error h2 {
+            color: #c00;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+
+            .form-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Guatemalan Coffee Recommendation Machine</h1>
+            <p>Discover your perfect cup from Guatemala's legendary coffee origins</p>
+        </div>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="caffeine">Caffeine Level</label>
+                <select id="caffeine">
+                    <option value="">Select caffeine level...</option>
+                    <option value="High">High - Maximum energy boost</option>
+                    <option value="Medium">Medium - Balanced caffeine</option>
+                    <option value="Low">Low - Gentle stimulation</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="roast">Roast Level</label>
+                <select id="roast">
+                    <option value="">Select roast level...</option>
+                    <option value="Dark">Dark - Bold and full-bodied</option>
+                    <option value="Medium">Medium - Balanced and versatile</option>
+                    <option value="Light">Light - Bright and complex</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="flavor">Flavor Profile</label>
+                <select id="flavor">
+                    <option value="">Select flavor profile...</option>
+                    <option value="Fruity">Fruity - Citrus, berry, tropical</option>
+                    <option value="Chocolatey">Chocolatey - Cocoa, caramel, sweet</option>
+                    <option value="Earthy">Earthy - Grounded, spiced, herbal</option>
+                </select>
+            </div>
+
+            <button class="btn-recommend" onclick="recommendCoffee()">Get My Recommendation</button>
+
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="footer">
+            Powered by Artificial Intelligence Developments (c) 2025
+        </div>
+    </div>
+
+    <script>
+        // Complete 27-space mapping of Guatemalan coffees
+        const coffeeDatabase = {
+            "High-Dark-Fruity": {
+                name: "San Marcos Bourbon (Dark Roast)",
+                region: "San Marcos - known for pronounced acidity and tropical notes",
+                profile: "Delicate floral, pronounced acidity, tropical fruit, jasmine",
+                perfect: "Those seeking bold fruity notes with full caffeine kick"
+            },
+            "High-Dark-Chocolatey": {
+                name: "Antigua Caturra (Dark Roast)",
+                region: "Antigua - Guatemala's most famous region with rich volcanic soil",
+                profile: "Full-bodied, rich dark chocolate, caramel, velvety texture",
+                perfect: "Classic dark roast lovers who want maximum energy and chocolate depth"
+            },
+            "High-Dark-Earthy": {
+                name: "Nuevo Oriente Bourbon (Dark Roast)",
+                region: "Nuevo Oriente - known for chocolate and full-bodied profiles",
+                profile: "Full-bodied, cocoa, balanced, earthy base",
+                perfect: "Those who enjoy grounded, robust flavors with high caffeine"
+            },
+            "High-Medium-Fruity": {
+                name: "Huehuetenango Caturra (Medium Roast)",
+                region: "Huehuetenango - highest altitude region with complex specialty varieties",
+                profile: "Bright, fruity, caramel, orange-like acidity, honey sweetness",
+                perfect: "Those seeking vibrant fruit flavors with strong energy boost"
+            },
+            "High-Medium-Chocolatey": {
+                name: "Fraijanes Bourbon (Medium Roast)",
+                region: "Fraijanes - produces chocolate-forward coffees with defined body",
+                profile: "Milk chocolate, caramel sweetness, baking spice, creamy",
+                perfect: "Balanced chocolate lovers who want high caffeine without dark roast intensity"
+            },
+            "High-Medium-Earthy": {
+                name: "Cobán Pache (Medium Roast)",
+                region: "Cobán - earthy-sweet, spiced, balanced profiles",
+                profile: "Balanced body, hazelnut, cherry, mild earthy undertones",
+                perfect: "Those preferring subtle earthiness with solid caffeine content"
+            },
+            "High-Light-Fruity": {
+                name: "Atitlán Caturra (Light Roast)",
+                region: "Atitlán - volcanic lake region producing citrus and tropical profiles",
+                profile: "Bright citrus acidity, tropical fruits, wine-like notes, floral",
+                perfect: "Adventurous drinkers seeking maximum brightness and complexity"
+            },
+            "High-Light-Chocolatey": {
+                name: "Antigua Bourbon (Light Roast)",
+                region: "Antigua - versatile region producing excellent coffees at all roast levels",
+                profile: "Sweet cocoa, toffee, soft lemon acidity, delicate chocolate",
+                perfect: "Those who want subtle chocolate with bright, clean finish"
+            },
+            "High-Light-Earthy": {
+                name: "Acatenango Typica (Light Roast)",
+                region: "Acatenango - balanced profiles with clean finish and marked acidity",
+                profile: "Sweet, tart fruit acidity, chamomile, earthy complexity",
+                perfect: "Complex palates seeking earthy notes with bright acidity"
+            },
+            "Medium-Dark-Fruity": {
+                name: "Atitlán Bourbon (Dark Roast)",
+                region: "Atitlán - volcanic lake region with diverse flavor profiles",
+                profile: "Full body, cocoa, black cherry, dried plum notes",
+                perfect: "Moderate caffeine seekers who enjoy dark fruit flavors"
+            },
+            "Medium-Dark-Chocolatey": {
+                name: "Antigua Catuai (Dark Roast)",
+                region: "Antigua - consistent quality across all varieties",
+                profile: "Smooth, dark chocolate dominant, bittersweet cocoa, low acidity",
+                perfect: "Classic dark chocolate lovers with moderate energy needs"
+            },
+            "Medium-Dark-Earthy": {
+                name: "Cobán Maragogype (Dark Roast)",
+                region: "Cobán - known for earthy-sweet balance",
+                profile: "Rich, spiced, earthy depth, chocolate base",
+                perfect: "Those seeking grounded flavors without overpowering caffeine"
+            },
+            "Medium-Medium-Fruity": {
+                name: "Acatenango Bourbon (Medium Roast)",
+                region: "Acatenango - balanced and versatile",
+                profile: "Dark cherry, citrus, nutmeg, balanced acidity",
+                perfect: "All-day coffee drinkers who enjoy fruit-forward balance"
+            },
+            "Medium-Medium-Chocolatey": {
+                name: "Nuevo Oriente Catuai (Medium Roast)",
+                region: "Nuevo Oriente - smooth, full-bodied profiles",
+                profile: "Milk chocolate dominant, honey, smooth, creamy texture",
+                perfect: "The quintessential balanced coffee experience"
+            },
+            "Medium-Medium-Earthy": {
+                name: "Cobán Caturra (Medium Roast)",
+                region: "Cobán - gentle, balanced character",
+                profile: "Subtle fruit, medium body, earthy-sweet balance",
+                perfect: "Those who appreciate understated complexity"
+            },
+            "Medium-Light-Fruity": {
+                name: "San Marcos Caturra (Light Roast)",
+                region: "San Marcos - floral and bright profiles",
+                profile: "Delicate floral, green apple, bright acidity, citrus finish",
+                perfect: "Morning sippers who want gentle energy with crisp fruit notes"
+            },
+            "Medium-Light-Chocolatey": {
+                name: "Fraijanes Typica (Light Roast)",
+                region: "Fraijanes - chocolate-forward even in light roasts",
+                profile: "Sweet chocolate undertones, floral, mild acidity, cocoa hints",
+                perfect: "Those seeking subtle sweetness without caffeine overload"
+            },
+            "Medium-Light-Earthy": {
+                name: "Acatenango Pache (Light Roast)",
+                region: "Acatenango - clean and balanced",
+                profile: "Lemon, caramel, earthy-sweet, smooth mouthfeel",
+                perfect: "Balanced palates seeking moderate energy"
+            },
+            "Low-Dark-Fruity": {
+                name: "Atitlán Pacamara (Dark Roast)",
+                region: "Atitlán - rare Pacamara variety with big flavor",
+                profile: "Big berry, stone fruit, rich body, fruity depth",
+                perfect: "Evening drinkers who want bold fruit without staying awake"
+            },
+            "Low-Dark-Chocolatey": {
+                name: "Huehuetenango Pache (Dark Roast)",
+                region: "Huehuetenango - produces gentle yet complex coffees",
+                profile: "Dark chocolate dominant, cinnamon, low acidity, velvety",
+                perfect: "Decadent chocolate lovers who are caffeine-sensitive"
+            },
+            "Low-Dark-Earthy": {
+                name: "Nuevo Oriente Pache (Dark Roast)",
+                region: "Nuevo Oriente - smooth and approachable",
+                profile: "Earthy, chocolatey, full-bodied, smooth finish",
+                perfect: "Those seeking comfort without stimulation"
+            },
+            "Low-Medium-Fruity": {
+                name: "Huehuetenango Pacamara (Medium Roast)",
+                region: "Huehuetenango - exceptional Pacamara variety",
+                profile: "Peach, dried apricot, berry, complex fruit",
+                perfect: "Fruit enthusiasts who prefer gentle caffeine"
+            },
+            "Low-Medium-Chocolatey": {
+                name: "Fraijanes Catuai (Medium Roast)",
+                region: "Fraijanes - reliable chocolate character",
+                profile: "Milk chocolate, caramel, cherry, balanced chocolate sweetness",
+                perfect: "Afternoon coffee breaks without the jitters"
+            },
+            "Low-Medium-Earthy": {
+                name: "Cobán Bourbon (Medium Roast)",
+                region: "Cobán - gentle and soothing",
+                profile: "Earthy-sweet, spiced, medium body, gentle",
+                perfect: "Relaxation seekers who still want coffee's comfort"
+            },
+            "Low-Light-Fruity": {
+                name: "Huehuetenango Geisha (Light Roast)",
+                region: "Huehuetenango - rare and prized Geisha variety",
+                profile: "Papaya, floral, citrus highlights, delicate complexity",
+                perfect: "Connoisseurs seeking ultimate refinement without stimulation"
+            },
+            "Low-Light-Chocolatey": {
+                name: "Antigua Typica (Light Roast)",
+                region: "Antigua - classic variety, refined execution",
+                profile: "Clean, sweet chocolate notes, balanced, refined cocoa",
+                perfect: "Subtle sweetness lovers with low caffeine tolerance"
+            },
+            "Low-Light-Earthy": {
+                name: "Nuevo Oriente Caturra (Light Roast)",
+                region: "Nuevo Oriente - approachable and smooth",
+                profile: "Earthy notes, subtle fruit, balanced minerality",
+                perfect: "Gentle sipping with minimal caffeine impact"
+            }
+        };
+
+        function recommendCoffee() {
+            const caffeine = document.getElementById('caffeine').value;
+            const roast = document.getElementById('roast').value;
+            const flavor = document.getElementById('flavor').value;
+            const resultDiv = document.getElementById('result');
+
+            // Validate inputs
+            if (!caffeine || !roast || !flavor) {
+                resultDiv.className = 'result show error';
+                resultDiv.innerHTML = `
+                    <h2>⚠️ Please Complete All Selections</h2>
+                    <p class="result-value">Please select your preferences for caffeine level, roast level, and flavor profile to get your personalized recommendation.</p>
+                `;
+                return;
+            }
+
+            // Build lookup key
+            const key = `${caffeine}-${roast}-${flavor}`;
+            const coffee = coffeeDatabase[key];
+
+            // Display recommendation
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = `
+                <h2>☕ Your Perfect Guatemalan Coffee</h2>
+                <div class="result-item">
+                    <span class="result-label">Coffee:</span>
+                    <span class="result-value">${coffee.name}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Region:</span>
+                    <span class="result-value">${coffee.region}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Flavor Profile:</span>
+                    <span class="result-value">${coffee.profile}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Perfect For:</span>
+                    <span class="result-value">${coffee.perfect}</span>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(107, 68, 35, 0.2); text-align: center; font-style: italic; color: #6B4423;">
+                    ¡Buen provecho! Enjoy your Guatemalan coffee!
+                </div>
+            `;
+
+            // Smooth scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
